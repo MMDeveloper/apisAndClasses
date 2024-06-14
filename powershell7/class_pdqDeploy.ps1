@@ -2,7 +2,7 @@ class pdqDeploy {
     hidden [string] $credential = $null
     hidden [string] $pdqDeployServer = ''
 
-    adobeManagement([hashtable] $methodParams) {
+    pdqDeploy([hashtable] $methodParams) {
         $methodParams.credential ??= ''
         $methodParams.pdqDeployServer ??= ''
         
