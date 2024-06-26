@@ -86,7 +86,7 @@ class cmsEncryption {
                     return $out
                 }
                 else {
-                    $out.errorMessage = "Could not decrypt data"
+                    $out.errorMessage = "Could not encrypt data"
                     return $out
                 }
             }
@@ -106,23 +106,28 @@ class cmsEncryption {
         $___methodParams.encryptionCert ??= $null
 
         $out = @{
-            errorState = $false
-            errorMessage = ''$ps_cms_Encryption| Where-Object FriendlyName -eq $___methodParams.encryptionCert
+            errorState   = $false
+            errorMessage = ''
+            data         = $null
+        }
+
+        if ($null -ne $___methodParams.filePath -and $null -ne $___methodParams.encryptionCert) {
+            $cert = Get-ChildItem -LiteralPath Cert:\ -Recurse | Where-Object FriendlyName -EQ $___methodParams.encryptionCert
 
             if ($null -ne $cert) {
-                $out.data = Unprotect-CMSMessage -To $cert -Path $___methodParams.filePath -ErrorAction SilentlyContinue
+                $out.data = Unprotect-CmsMessage -To $cert -LiteralPath $___methodParams.filePath -ErrorAction SilentlyContinue
                 $out.errorState = $?
                 
                 if ($out.errorState -ne $false) {
                     return $out
                 }
                 else {
-                    $out.errorMessage = "Could not decrypt data"
+                    $out.errorMessage = 'Could not decrypt data'
                     return $out
                 }
             }
             else {
-                $out.errorMessage = "Could not get certificate $($___methodParams.encryptionCert)"
+                $out.errorMessage = "Could not get certificate $($Global:mford_Driver.pointers.___sjrConfiguration.powershellEncryption.encryptionCert_primary)"
                 return $out
             }
         }

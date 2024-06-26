@@ -8,7 +8,7 @@ class haveibeenpwned {
 
     [object] doRequest([string] $endpoint, [string] $method, [hashtable] $headers, [object] $body) {
         $headers['hibp-api-key'] = $this.apiKey
-        $headers['user-agent'] = 'MM Powershell API Client'
+        $headers['user-agent'] = 'MF Powershell API Client'
         $uri = $this.baseURL + $endpoint
 
         $statusCode = ''

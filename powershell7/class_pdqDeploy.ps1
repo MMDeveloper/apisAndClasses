@@ -1,5 +1,5 @@
 class pdqDeploy {
-    hidden [string] $credential = $null
+    hidden [PSCredential] $credential = $null
     hidden [string] $pdqDeployServer = ''
 
     pdqDeploy([hashtable] $methodParams) {
@@ -13,22 +13,21 @@ class pdqDeploy {
     [void] sendPDQDeployPackageToComputers([hashtable] $methodParams) {
         $methodParams.computerNames ??= @()
         $methodParams.packageName ??= ''
-        $methodParams.credential ??= $this.credential
 
         $computerNames = $methodParams.computerNames
         $packageName = $methodParams.packageName
 
-        Invoke-Command -ComputerName $this.pdqDeployServer -Credential $methodParams.credential -ScriptBlock {
+        Invoke-Command -ComputerName $this.pdqDeployServer -Credential $this.credential -ScriptBlock {
             Start-Process -FilePath 'C:\Program Files (x86)\Admin Arsenal\PDQ Deploy\pdqdeploy.exe' -Wait -ArgumentList 'Deploy -Package', $using:packageName, '-Targets', $($using:computerNames -join ' ')
         }
     
     }
 }
 <#
-
+$credential = Get-Credential
 $pdqDeploy = [pdqDeploy]::new(@{
     credential = Get-Credential
-    pdqDeployServer = 'pdqDeployServer.fqdn.net'
+    pdqDeployServer = 'pdqservername.fqdn.net'
 })
 
 $pdqDeploy.sendPDQDeployPackageToComputers(@{

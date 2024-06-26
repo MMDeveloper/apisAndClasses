@@ -3,8 +3,8 @@ class ellucianCloud {
     hidden [string] $bearerToken = ''
     [datetime] $nextTokenRefresh = (Get-Date)
     [int] $bearerTokenRefreshMinutes = 5
-
     [string] $apiURLBase = 'https://integrate.elluciancloud.com/'
+    [string] $lastURI = ''
 
     ellucianCloud([hashtable] $methodParams) {
         $methodParams.apikey ??= ''
@@ -33,8 +33,10 @@ class ellucianCloud {
         $methodParams.requestMethod ??= ''
         $methodParams.body ??= ''
         $methodParams.urlParams ??= ''
+        $methodParams.headerOverrides ??= @()
 
-        $uri = $this.apiURLBase + 'api/' + $methodParams.url + '?' + $methodParams.urlParams
+        $uri = $this.apiURLBase + $methodParams.url + '?' + $methodParams.urlParams
+        $this.lastURI = $uri
 
         $headers = @{
             'Content-Type' = 'application/json'
@@ -42,11 +44,22 @@ class ellucianCloud {
             Authorization  = 'Bearer ' + $this.bearerToken
         }
 
+        if ($methodParams.headerOverrides.Count -gt 0) {
+            $methodParams.headerOverrides.GetEnumerator() | ForEach-Object {
+                $headers[$_.Name] = $_.Value
+            }
+        }
+
         return Invoke-RestMethod -Uri $uri -Headers $headers -Body $methodParams.body -Method $methodParams.requestMethod
     }
 
     [string] hashtableToURLParams([hashtable] $hashTable) {
-        return ($hashTable.GetEnumerator() | ForEach-Object { "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$([System.Web.HttpUtility]::UrlEncode($_.Value))" }) -join '&'
+        #return ($hashTable.GetEnumerator() | ForEach-Object { "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$([System.Web.HttpUtility]::UrlEncode($_.Value))" }) -join '&'
+        return ($hashTable.GetEnumerator() | ForEach-Object { "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$($_.Value)" }) -join '&'
+    }
+    
+    [string] getLastURI() {
+        return $this.lastURI
     }
 }
 
@@ -60,7 +73,7 @@ $ellucianCloud.doAPIRequest(@{
         url           = 'identification-biographical'
         requestMethod = 'Get'
         urlParams     = $ellucianCloud.hashtableToURLParams(@{
-                id = 'User-Id-Here'
+                id = 'X00697827'
             })
     })
 
@@ -68,7 +81,7 @@ $ellucianCloud.doAPIRequest(@{
         url           = 'identification-email'
         requestMethod = 'Get'
         urlParams     = $ellucianCloud.hashtableToURLParams(@{
-                id = 'User-Id-Here'
+                id = 'X00697827'
             })
     })
     
