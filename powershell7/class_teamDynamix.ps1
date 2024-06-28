@@ -4,19 +4,15 @@
     hidden [string] $webAPIURLBase = ''
     hidden [System.Security.SecureString] $bearerKey
 
-    teamDynamix([hashtable] $methodParams) {
-        $methodParams.BEID ??= ''
-        $methodParams.WebServicesKey ??= ''
-        $methodParams.client_secret ??= ''
-        
-        $this.BEID = $methodParams.BEID
-        $this.WebServicesKey = $methodParams.WebServicesKey
-        $this.webAPIURLBase = $methodParams.webAPIURLBase
+    teamDynamix([hashtable]$params) {
+        $this.BEID = $params.BEID
+        $this.WebServicesKey = $params.WebServicesKey
+        $this.webAPIURLBase = $params.webAPIURLBase
     }
 
     [void] refreshOAuthToken() {
         #get OAuth bearer token
-        $returnedBearerKey = Invoke-RestMethod -Uri "$($this.webAPIURLBase)/auth/loginadmin" -Method 'POST' -ContentType 'application/json' -Body $(@{BEID = $this.BEID; WebServicesKey = $this.WebServicesKey} | ConvertTo-Json)
+        $returnedBearerKey = Invoke-RestMethod -Uri "$($this.webAPIURLBase)/auth/loginadmin" -Method 'POST' -ContentType 'application/json' -Body $(@{BEID = $this.BEID; WebServicesKey = $this.WebServicesKey } | ConvertTo-Json)
 
         #if request failed
         if ($? -eq $false) {
@@ -36,7 +32,7 @@
             foreach ($key in $extraHeaders.Keys) {
                 $headers[$key] = $extraHeaders[$key]
             }
-        } else {}
+        }
 
         if ($verb -like 'GET') {
             $ret = Invoke-WebRequest -Uri "$($this.webAPIURLBase)$endpoint" -Method $verb -ContentType 'application/json' -Headers $headers -Authentication OAuth -Token $this.bearerKey
@@ -49,7 +45,9 @@
             if ($ret.Headers['X-RateLimit-Remaining'] -le 1) {
                 Write-Host -ForegroundColor Cyan 'Hitting API Rate Limit, 60-sec Cooldown'
                 Start-Sleep -Seconds 60
-            } else {}
+            }
+            else {
+            }
 
             if ($ret.Content) {
                 return $ret.Content | ConvertFrom-Json
@@ -69,22 +67,22 @@
 
         if (Test-Path -PathType Leaf -LiteralPath $file) {
             $defaultAPIOptions = @{
-                AllowIsActiveChanges     = 'false';
-                AllowSecurityRoleChanges = 'false';
-                AllowApplicationChanges  = 'false';
-                NotifyEmailAddresses     = 'techs@sjrstate.edu';
+                AllowIsActiveChanges     = 'false'
+                AllowSecurityRoleChanges = 'false'
+                AllowApplicationChanges  = 'false'
+                NotifyEmailAddresses     = 'techs@sjrstate.edu'
             }
 
             if ($apiOptions -ne @{}) {
                 foreach ($key in $apiOptions.Keys) {
                     $defaultAPIOptions[$key] = $apiOptions[$key]
                 }
-            } else {}
+            }
 
             $FileStream = [System.IO.FileStream]::new($file, [System.IO.FileMode]::Open)
             $FileHeader = [System.Net.Http.Headers.ContentDispositionHeaderValue]::new('form-data')
-            $FileHeader.Name = 'fieldNameHere'
-            $FileHeader.FileName = Split-Path -leaf $file
+            $FileHeader.Name = 'tdusers.xlsx'
+            $FileHeader.FileName = Split-Path -Leaf $file
             $FileContent = [System.Net.Http.StreamContent]::new($FileStream)
             $FileContent.Headers.ContentDisposition = $FileHeader
             $FileContent.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -92,23 +90,32 @@
             $MultipartContent = [System.Net.Http.MultipartFormDataContent]::new()
             $MultipartContent.Add($FileContent)
 
-            Invoke-WebRequest -Uri "$($this.webAPIURLBase)/people/import?AllowIsActiveChanges=$($defaultAPIOptions['AllowIsActiveChanges'])&AllowSecurityRoleChanges=$($defaultAPIOptions['AllowSecurityRoleChanges'])&AllowApplicationChanges=$($defaultAPIOptions['AllowApplicationChanges'])&NotifyEmailAddresses=$($defaultAPIOptions['NotifyEmailAddresses'])" -Body $MultipartContent -Method 'POST' -Authentication OAuth -Token $this.bearerKey
-            return $true
+            try {
+                return Invoke-WebRequest -Uri "$($this.webAPIURLBase)/people/import?AllowIsActiveChanges=$($defaultAPIOptions['AllowIsActiveChanges'])&AllowSecurityRoleChanges=$($defaultAPIOptions['AllowSecurityRoleChanges'])&AllowApplicationChanges=$($defaultAPIOptions['AllowApplicationChanges'])&NotifyEmailAddresses=$($defaultAPIOptions['NotifyEmailAddresses'])" -Body $MultipartContent -Method 'POST' -Authentication OAuth -Token $this.bearerKey
+                return $true
+            }
+            catch {
+                Write-Host -ForegroundColor Red 'API Error'
+                Write-Output $_
+                return $false
+            }
         }
         else {
             Write-Host -ForegroundColor Red "$file does not exist"
-            return $false
+            return @{}
         }
     }
 
     [object] get_searchUsers([string]$orgID) {
         #try active users
-        $user = $this.makeCURLRequest('POST', '/people/search', $(@{'SearchText'=$orgID; 'IsActive'=$true} | ConvertTo-Json), @{})
+        $user = $this.makeCURLRequest('POST', '/people/search', $(@{'SearchText' = $orgID; 'IsActive' = $true } | ConvertTo-Json), @{})
 
         if ($user.Count -eq 0) {
             #try inactive users
-            $user = $this.makeCURLRequest('POST', '/people/search', $(@{'SearchText'=$orgID; 'IsActive'=$false} | ConvertTo-Json), @{})
-        } else {}
+            $user = $this.makeCURLRequest('POST', '/people/search', $(@{'SearchText' = $orgID; 'IsActive' = $false } | ConvertTo-Json), @{})
+        }
+        else {
+        }
 
         return $user
     }
