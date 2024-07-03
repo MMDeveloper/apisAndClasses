@@ -63,7 +63,7 @@
         }
     }
 
-    [bool] uploadPeopleAPIFile([string]$file, [hashtable]$apiOptions = @{}) {
+    [object] uploadPeopleAPIFile([string]$file, [hashtable]$apiOptions = @{}) {
 
         if (Test-Path -PathType Leaf -LiteralPath $file) {
             $defaultAPIOptions = @{
@@ -81,7 +81,7 @@
 
             $FileStream = [System.IO.FileStream]::new($file, [System.IO.FileMode]::Open)
             $FileHeader = [System.Net.Http.Headers.ContentDispositionHeaderValue]::new('form-data')
-            $FileHeader.Name = 'tdusers.xlsx'
+            $FileHeader.Name = Split-Path -Leaf $file
             $FileHeader.FileName = Split-Path -Leaf $file
             $FileContent = [System.Net.Http.StreamContent]::new($FileStream)
             $FileContent.Headers.ContentDisposition = $FileHeader
@@ -90,15 +90,7 @@
             $MultipartContent = [System.Net.Http.MultipartFormDataContent]::new()
             $MultipartContent.Add($FileContent)
 
-            try {
-                return Invoke-WebRequest -Uri "$($this.webAPIURLBase)/people/import?AllowIsActiveChanges=$($defaultAPIOptions['AllowIsActiveChanges'])&AllowSecurityRoleChanges=$($defaultAPIOptions['AllowSecurityRoleChanges'])&AllowApplicationChanges=$($defaultAPIOptions['AllowApplicationChanges'])&NotifyEmailAddresses=$($defaultAPIOptions['NotifyEmailAddresses'])" -Body $MultipartContent -Method 'POST' -Authentication OAuth -Token $this.bearerKey
-                return $true
-            }
-            catch {
-                Write-Host -ForegroundColor Red 'API Error'
-                Write-Output $_
-                return $false
-            }
+            return Invoke-WebRequest -Uri "$($this.webAPIURLBase)/people/import?AllowIsActiveChanges=$($defaultAPIOptions['AllowIsActiveChanges'])&AllowSecurityRoleChanges=$($defaultAPIOptions['AllowSecurityRoleChanges'])&AllowApplicationChanges=$($defaultAPIOptions['AllowApplicationChanges'])&NotifyEmailAddresses=$($defaultAPIOptions['NotifyEmailAddresses'])" -Body $MultipartContent -Method 'POST' -Authentication OAuth -Token $this.bearerKey
         }
         else {
             Write-Host -ForegroundColor Red "$file does not exist"
