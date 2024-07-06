@@ -163,44 +163,4 @@ class utilities {
 
         Write-Progress -Activity $___methodParams.activity -Status '100% Complete' -PercentComplete 100 -Completed
     }
-
-    <#
-    #this is experimental and untested right now
-    utilities.runProcess(@{
-        filePath = 'A:\Some\Path\To\Executable.exe'
-        arguments = @(
-            '-w', '"some quoted string"',
-            '-b', '1000',
-            '--some-flag'
-        )
-        wait = $true
-        newWindow = $false
-    })
-    #>
-    [void] runProcess([object] $___methodParams) {
-        $___methodParams.filePath ??= $null
-        $___methodParams.arguments ??= @()
-        $___methodParams.wait ??= $true
-        $___methodParams.newWindow ??= $false
-
-        $___splat = @{
-            FilePath = $___methodParams.filePath
-            ArgumentList = $___methodParams.arguments
-        }
-
-        if ($___methodParams.wait -eq $true) {
-            $___splat['Wait'] = $true
-        }
-
-        if ($___methodParams.newWindow -eq $true) {
-            $___splat['NoNewWindow'] = $false
-        }
-
-        if ($null -ne $___methodParams.filePath -and $___methodParams.arguments is [array]) {
-            Start-Process @___splat
-        }
-        else {
-            Write-Host -ForegroundColor Red 'Invalid parameters'
-        }
-    }
 }
