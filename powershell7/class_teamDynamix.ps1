@@ -63,6 +63,7 @@
         }
     }
 
+    #if the file is over 4mb you will need to chunk it and upload individual files
     [object] uploadPeopleAPIFile([string]$file, [hashtable]$apiOptions = @{}) {
 
         if (Test-Path -PathType Leaf -LiteralPath $file) {
