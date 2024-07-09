@@ -16,6 +16,7 @@ class passwordState {
         $methodParams.body ??= $null
         $methodParams.headers ??= @{}
         $methodParams.headers.Add('APIKey', $this.apiKey)
+        $methodParams.headers.Add('Content-Type', 'application/json')
 
         $methodParams.url = "$($this.apiBase)$($methodParams.url)"
 
@@ -34,6 +35,19 @@ class passwordState {
 
         return $response
     }
+
+    [object] updatePassword([int] $passwordId, [securestring] $newPassword) {
+        $response = $this.doAPIRequest(@{
+                method = 'PUT'
+                url    = '/passwords'
+                body   = @{
+                    PasswordID = $passwordId
+                    password   = ($newPassword | ConvertFrom-SecureString -AsPlainText)
+                } | ConvertTo-Json
+            })
+
+        return $response
+    }
 }
 
 <#
@@ -42,11 +56,15 @@ $passwordState = [passwordState]::new(@{
         apiBase = 'https://pwmanager.mydomain.edu/api'
     })
 
-$passwordRecord = $passwordState.getPasswordById(584)
-
-#or for the same result (or unimplemented methods)
-$passwordRecord = $passwordState.doAPIRequest(@{
+#get password by ID
+$password = $passwordState.getPasswordById(584)
+#or
+$result = $passwordState.doAPIRequest(@{
         method = 'GET'
         url    = "/passwords/584"
     })
+
+#update password by id
+$newPassword = 'some password' | ConvertTo-SecureString -AsPlainText -Force
+$passwordState.updatePassword(585, $newPassword)
 #>
