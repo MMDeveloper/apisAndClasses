@@ -40,6 +40,10 @@ class fixedWidthRecordsGenerator {
                     $dataValue = $this.convertToString($record[$key])
                     $ret = & $this.rowLayout[$key].validate $dataValue
 
+                    <#if ($key -like 'workEmailAddress' -or $key -like 'personalEmailAddress') {
+                        Write-Host "Validation for $key returned $($ret.valid); data '$($dataValue)' is a $($dataValue.gettype())"
+                    }#>
+
                     if ($ret.valid -eq $false) {
                         $returnRecord.errors += $ret.errors
                         $addRecord = $false
@@ -66,7 +70,7 @@ class fixedWidthRecordsGenerator {
                     }
                 } 
                 elseif ($dataValue.Length -gt $this.rowLayout[$key].width) {
-                    switch ($this.rowLayout[$key].removeFrom) {
+                    switch ($this.rowLayout[$key].truncateFromSide) {
                         'left' {
                             $recordToAdd += $dataValue.Substring($dataValue.Length - $this.rowLayout[$key].width)
                         }
@@ -129,13 +133,25 @@ class fixedWidthRecordsGenerator {
     }
 
     [string] convertToString($value) {
-        if ($null -eq $value) {
+        if ([string]::IsNullOrEmpty($value)) {
             return ''
         }
 
         return [string]$value.ToString().Trim()
     }
+
+    [void] writeGenericError([hashtable] $methodParams) {
+        $methodParams.recordID ??= 'N/A'
+        $methodParams.errors ??= @()
+
+        Write-Host "$($methodParams.recordID) not added for the following reasons:"
+        $methodParams.errors | ForEach-Object {
+            Write-Host '---' $_
+        }
+        Write-Host ''
+    }
 }
+
 
 <#
 $generator = [fixedWidthRecordsGenerator]::new(@{
