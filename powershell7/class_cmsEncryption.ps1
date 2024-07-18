@@ -127,7 +127,7 @@ class cmsEncryption {
                 }
             }
             else {
-                $out.errorMessage = "Could not get certificate $($Global:mford_Driver.pointers.___sjrConfiguration.powershellEncryption.encryptionCert_primary)"
+                $out.errorMessage = "Could not get certificate $($___methodParams.encryptionCert)"
                 return $out
             }
         }
