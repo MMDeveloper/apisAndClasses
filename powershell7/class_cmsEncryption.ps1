@@ -5,16 +5,16 @@ class cmsEncryption {
         $___methodParams.encryptionCert ??= $null
 
         $out = @{
-            errorState = $false
+            errorState   = $false
             errorMessage = ''
-            data = $null
+            data         = $null
         }
 
         if ($null -ne $___methodParams.stringData) {
-            $cert = Get-ChildItem -Path Cert:\ -recurse | Where-Object FriendlyName -eq $___methodParams.encryptionCert
+            $cert = Get-ChildItem -Path Cert:\ -Recurse | Where-Object FriendlyName -EQ $___methodParams.encryptionCert
 
             if ($null -ne $cert) {
-                $out.data = Protect-CMSMessage -To $cert -Content $___methodParams.stringData -ErrorAction SilentlyContinue
+                $out.data = Protect-CmsMessage -To $cert -Content $___methodParams.stringData -ErrorAction SilentlyContinue
                 $out.errorState = $?
                 return $out
             }
@@ -34,23 +34,23 @@ class cmsEncryption {
         $___methodParams.encryptionCert ??= $null
 
         $out = @{
-            errorState = $false
+            errorState   = $false
             errorMessage = ''
-            data = $null
+            data         = $null
         }
 
         if ($null -ne $___methodParams.stringData) {
-            $cert = Get-ChildItem -Path Cert:\ -recurse | Where-Object FriendlyName -eq $___methodParams.encryptionCert
+            $cert = Get-ChildItem -Path Cert:\ -Recurse | Where-Object FriendlyName -EQ $___methodParams.encryptionCert
 
             if ($null -ne $cert) {
-                $out.data = Unprotect-CMSMessage -To $cert -Content $___methodParams.stringData -ErrorAction SilentlyContinue
+                $out.data = Unprotect-CmsMessage -To $cert -Content $___methodParams.stringData -ErrorAction SilentlyContinue
                 $out.errorState = $?
                 
                 if ($out.errorState -ne $false) {
                     return $out
                 }
                 else {
-                    $out.errorMessage = "Could not decrypt data"
+                    $out.errorMessage = 'Could not decrypt data'
                     return $out
                 }
             }
@@ -71,22 +71,22 @@ class cmsEncryption {
         $___methodParams.encryptionCert ??= $null
 
         $out = @{
-            errorState = $false
+            errorState   = $false
             errorMessage = ''
         }
 
         if ($null -ne $___methodParams.stringData -and $___methodParams.filePath -ne $null) {
-            $cert = Get-ChildItem -Path Cert:\ -recurse | Where-Object FriendlyName -eq $___methodParams.encryptionCert
+            $cert = Get-ChildItem -Path Cert:\ -Recurse | Where-Object FriendlyName -EQ $___methodParams.encryptionCert
 
             if ($null -ne $cert) {
-                Protect-CMSMessage -To $cert -Content $___methodParams.stringData -OutFile $___methodParams.filePath -ErrorAction SilentlyContinue
+                Protect-CmsMessage -To $cert -Content $___methodParams.stringData -OutFile $___methodParams.filePath -ErrorAction SilentlyContinue
                 $out.errorState = $?
                 
                 if ($out.errorState -ne $false) {
                     return $out
                 }
                 else {
-                    $out.errorMessage = "Could not encrypt data"
+                    $out.errorMessage = 'Could not encrypt data'
                     return $out
                 }
             }
