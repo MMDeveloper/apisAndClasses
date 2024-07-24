@@ -50,12 +50,23 @@ class ellucianCloud {
             }
         }
 
-        return Invoke-RestMethod -Uri $uri -Headers $headers -Body $methodParams.body -Method $methodParams.requestMethod
+        try {
+            return Invoke-RestMethod -Uri $uri -Headers $headers -Body $methodParams.body -Method $methodParams.requestMethod
+        }
+        catch {
+            Write-Host "Error: $_"
+            return @{}
+        }
     }
 
     [string] hashtableToURLParams([hashtable] $hashTable) {
-        #return ($hashTable.GetEnumerator() | ForEach-Object { "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$([System.Web.HttpUtility]::UrlEncode($_.Value))" }) -join '&'
-        return ($hashTable.GetEnumerator() | ForEach-Object { "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$($_.Value)" }) -join '&'
+        <#return ($hashTable.GetEnumerator() | ForEach-Object { 
+                "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$([System.Web.HttpUtility]::UrlEncode($_.Value))"
+            }) -join '&'#>
+             
+        return ($hashTable.GetEnumerator() | ForEach-Object { 
+                "$([System.Web.HttpUtility]::UrlEncode($_.Key))=$($_.Value)"
+            }) -join '&'
     }
     
     [string] getLastURI() {
