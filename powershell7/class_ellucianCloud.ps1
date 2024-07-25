@@ -2,8 +2,8 @@ class ellucianCloud {
     hidden [string] $apiKey = ''
     hidden [string] $bearerToken = ''
     [datetime] $nextTokenRefresh = (Get-Date)
-    [int] $bearerTokenRefreshMinutes = 5
-    [string] $apiURLBase = 'https://integrate.elluciancloud.com/'
+    hidden [int] $bearerTokenRefreshMinutes = 5
+    hidden [string] $apiURLBase = 'https://integrate.elluciancloud.com/'
     [string] $lastURI = ''
 
     ellucianCloud([hashtable] $methodParams) {
@@ -50,12 +50,22 @@ class ellucianCloud {
             }
         }
 
+        $returnObject = @{
+            success = $false
+            errors  = @()
+            data    = @{}
+        }
+
         try {
-            return Invoke-RestMethod -Uri $uri -Headers $headers -Body $methodParams.body -Method $methodParams.requestMethod
+            $returnObject.success = $true
+            $returnObject.data = Invoke-RestMethod -Uri $uri -Headers $headers -Body $methodParams.body -Method $methodParams.requestMethod
+
+            return $returnObject
         }
         catch {
-            Write-Host "Error: $_"
-            return @{}
+            $returnObject.success = $false
+            $returnObject.errors += $_
+            return $returnObject
         }
     }
 
@@ -84,7 +94,7 @@ $ellucianCloud.doAPIRequest(@{
         url           = 'identification-biographical'
         requestMethod = 'Get'
         urlParams     = $ellucianCloud.hashtableToURLParams(@{
-                id = 'X00697827'
+                id = 'someERPUserID'
             })
     })
 
@@ -92,15 +102,23 @@ $ellucianCloud.doAPIRequest(@{
         url           = 'identification-email'
         requestMethod = 'Get'
         urlParams     = $ellucianCloud.hashtableToURLParams(@{
-                id = 'X00697827'
+                id = 'someERPUserID'
             })
     })
     
 $ellucianCloud.doAPIRequest(@{
         url           = 'employees'
         requestMethod = 'Get'
-        urlParams     = $ellucianCloud.hashtableToURLParams(@{
-                criteria = (@{ 'status' = 'terminated' } | ConvertTo-Json -Compress)
-            })
+        headerOverrides = @{
+                'Accept' = 'application/vnd.hedtech.integration.v12+json'
+        }
+        urlParams       = $ellucianCloud.hashtableToURLParams(@{
+                        #limit    = 1
+                        criteria = @{
+                                contract = @{
+                                        type = 'fullTime'
+                                } 
+                        } | ConvertTo-Json -Compress
+                })
     })
 #>
