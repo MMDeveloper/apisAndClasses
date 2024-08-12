@@ -26,11 +26,13 @@ class fixedWidthRecordsGenerator {
 
     [object] addRecord([hashtable] $record) {
         $recordToAdd = ''
+        $objectRepresentation = [ordered] @{}
         $addRecord = $true
 
         $returnRecord = @{
-            added  = $addRecord
-            errors = @()
+            added                = $addRecord
+            objectRepresentation = @{}
+            errors               = @()
         }
 
         #check validations
@@ -59,41 +61,53 @@ class fixedWidthRecordsGenerator {
                 if ($dataValue.Length -lt $this.rowLayout[$key].width) {
                     switch ($this.rowLayout[$key].padSide) {
                         'left' {
-                            $recordToAdd += $dataValue.PadLeft($this.rowLayout[$key].width, $this.rowLayout[$key].padWith)
+                            $dataValue = $dataValue.PadLeft($this.rowLayout[$key].width, $this.rowLayout[$key].padWith)
                         }
                         'right' {
-                            $recordToAdd += $dataValue.PadRight($this.rowLayout[$key].width, $this.rowLayout[$key].padWith)
+                            $dataValue = $dataValue.PadRight($this.rowLayout[$key].width, $this.rowLayout[$key].padWith)
                         }
                         default {
-                            $recordToAdd += $dataValue.PadLeft($this.rowLayout[$key].width, $this.rowLayout[$key].padWith)
+                            $dataValue = $dataValue.PadLeft($this.rowLayout[$key].width, $this.rowLayout[$key].padWith)
                         }
                     }
-                } 
+
+                    $recordToAdd += $dataValue
+                    $objectRepresentation[$key] = $dataValue
+                }
                 elseif ($dataValue.Length -gt $this.rowLayout[$key].width) {
                     switch ($this.rowLayout[$key].truncateFromSide) {
                         'left' {
-                            $recordToAdd += $dataValue.Substring($dataValue.Length - $this.rowLayout[$key].width)
+                            $dataValue = $dataValue.Substring($dataValue.Length - $this.rowLayout[$key].width)
                         }
                         'right' {
-                            $recordToAdd += $dataValue.Substring(0, $this.rowLayout[$key].width)
+                            $dataValue = $dataValue.Substring(0, $this.rowLayout[$key].width)
                         }
                         default {
-                            $recordToAdd += $dataValue.Substring(0, $this.rowLayout[$key].width)
+                            $dataValue = $dataValue.Substring(0, $this.rowLayout[$key].width)
                         }
                     }
+
+                    $recordToAdd += $dataValue
+                    $objectRepresentation[$key] = $dataValue
                 } 
                 else {
                     $recordToAdd += $dataValue
+                    $objectRepresentation[$key] = $dataValue
                 }
+
             }
 
             $this.recordsToWrite += $recordToAdd
         }
 
         $returnRecord.added = $addRecord
+        $returnRecord.objectRepresentation = $objectRepresentation
 
         if ($this.recordsToWrite.Count -ge $this.flushAfter) {
-            $this.writeRecordsToFile($true)
+            $this.writeRecordsToFile(@{
+                    append  = $true
+                    newLine = $true
+                })
         }
 
         return $returnRecord
@@ -192,11 +206,15 @@ $generator = [fixedWidthRecordsGenerator]::new(@{
     }
 })
 
-$generator.addRecord(@{
+$ret = $generator.addRecord(@{
     field1 = '123'
     field2 = '567890'
     field3 = '890'
 })
+
+$ret.added #should be true if it was added for writing
+$ret.objectRepresentation #should be the object representation of the record that was added
+$ret.errors #should be any errors that were encountered while trying to add that record
 
 #cleanup and write any remaining records that were not automatically flushed to disk
 $generator.cleanup()
