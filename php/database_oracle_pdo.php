@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This is an oracle database class of the framework
+ * This is the database interface class of the framework
  * @package MMExtranet
  */
 
@@ -235,6 +235,9 @@ class database_oracle_pdo {
 /*
 I feel the oracle driver implementation isn't too great as I could
 not reliably catch errors on certain actions.
+The $params argument is optional if there are no parameters in the query.
+The $params argument is an associative array where the key is the parameter name
+and the value is the parameter value.
 
 $dsn = '(DESCRIPTION=
                     (ADDRESS=
