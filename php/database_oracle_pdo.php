@@ -104,8 +104,6 @@ class database_oracle_pdo {
             if ($return === false) {
                 $this->errors[] = oci_error( $this->pdoReference );
             }
-            else {
-            }
 
             return $return;
         }

@@ -6,7 +6,6 @@
  */
 class pushover_api {
 
-
     /**
      * private user key
      * @var string
@@ -25,7 +24,6 @@ class pushover_api {
      */
     private static $apiURL = 'https://api.pushover.net/1/messages.json';
 
-
     /**
      * This method initializes the class with the private keys
      * @access public
@@ -33,25 +31,34 @@ class pushover_api {
      * @param string $apiToken the private API key
      */
     public static function init(string $userKey, string $apiToken) {
-        self::$userKey = $userKey;
+
+        self::$userKey  = $userKey;
         self::$apiToken = $apiToken;
     }
 
+
+
     public static function sendNotification(array $params) {
+
         $notificationParams = array();
 
-        foreach ($params as $key => $val) {
+        foreach ( $params as $key => $val ) {
             $notificationParams[$key] = $val;
         }
 
         //force user and api tokens
         $notificationParams['token'] = self::$apiToken;
-        $notificationParams['user'] = self::$userKey;
+        $notificationParams['user']  = self::$userKey;
 
         //ship it
-        return curl::makeSingleRequest('POST', self::$apiURL, $notificationParams);
+        return curl::makeSingleRequest( 'POST', self::$apiURL, $notificationParams );
     }
+
+
+
 }
+
+
 
 /*
 pushover_api::init('myUserKey', 'myApiToken');
