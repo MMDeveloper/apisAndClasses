@@ -9,7 +9,7 @@ class oracleDBAccess {
         #validate OMDA dll
         if ($null -ne $___methodParams.OMDA) {
             if ((Test-Path -LiteralPath $___methodParams.OMDA -PathType Leaf) -eq $true -and $___methodParams.OMDA -like '*.dll') {
-                $returnObject.errorState = $true
+                $returnObject.successState = $true
                 Add-Type -LiteralPath $___methodParams.OMDA -ErrorAction SilentlyContinue
 
                 $assemblies = [System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object FullName -Like '*Oracle.ManagedDataAccess*'
@@ -18,31 +18,31 @@ class oracleDBAccess {
                     #good
                 }
                 else {
-                    $returnObject.errorState = $false
+                    $returnObject.successState = $false
                     $returnObject.errorMessages += 'Cound not find correct Assembly'
                     return $returnObject
                 }
             }
             else {
-                $returnObject.errorState = $false
+                $returnObject.successState = $false
                 $returnObject.errorMessages += 'Invalid dll path'
                 return $returnObject
             }
         }
         else {
-            $returnObject.errorState = $false
+            $returnObject.successState = $false
             $returnObject.errorMessages += 'Missing OMDA dll path'
             return $returnObject
         }
 
 
-        #validate csvData
+        #validate csbData
         if ($null -ne $___methodParams.csbData -and $___methodParams.csbData -is [Hashtable]) {
-            $returnObject.errorState = $true
+            $returnObject.successState = $true
             #good
         }
         else {
-            $returnObject.errorState = $false
+            $returnObject.successState = $false
             $returnObject.errorMessages += 'Missing or invalid csbData hashtable'
             return $returnObject
         }
@@ -60,7 +60,7 @@ class oracleDBAccess {
             $this.dbConnectionObject.Open()
         }
         catch {
-            $returnObject.errorState = $false
+            $returnObject.successState = $false
             $returnObject.errorMessages += 'Error connecting with specified DSN parameters'
             return $returnObject
         }
@@ -98,14 +98,14 @@ class oracleDBAccess {
                 $returnObject.data = $queryObjectResults
             }
             catch {
-                $returnObject.errorState = $false
+                $returnObject.successState = $false
                 $returnObject.errorMessages += $Error[0]
             }
 
             return $returnObject
         }
         else {
-            $returnObject.errorState = $false
+            $returnObject.successState = $false
             $returnObject.errorMessages += 'Missing or non-string query'
             return $returnObject
         }
@@ -113,7 +113,7 @@ class oracleDBAccess {
 
     [object]getGenericReturnObject() {
         return @{
-            errorState    = $true
+            successState    = $true
             errorMessages = @()
         }
     }
@@ -152,7 +152,7 @@ $ret = $oracleDBAccess.init(@{
         }
     })
 
-if ($ret.errorState -eq $true) {
+if ($ret.successState -eq $true) {
     $ret = $oracleDBAccess.doQuery(@{
         query = 'SELECT
                     TSPRIDEN.SPRIDEN_FIRST_NAME,
@@ -172,7 +172,7 @@ if ($ret.errorState -eq $true) {
         )
     })
 
-    if ($ret.errorState -eq $true) {
+    if ($ret.successState -eq $true) {
         $ret.data | Format-List
     }
     else {

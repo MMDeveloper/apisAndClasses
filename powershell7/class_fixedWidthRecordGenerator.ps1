@@ -206,15 +206,11 @@ $generator = [fixedWidthRecordsGenerator]::new(@{
     }
 })
 
-$ret = $generator.addRecord(@{
+$generator.addRecord([ordered]@{
     field1 = '123'
     field2 = '567890'
     field3 = '890'
 })
-
-$ret.added #should be true if it was added for writing
-$ret.objectRepresentation #should be the object representation of the record that was added
-$ret.errors #should be any errors that were encountered while trying to add that record
 
 #cleanup and write any remaining records that were not automatically flushed to disk
 $generator.cleanup()

@@ -63,7 +63,6 @@
         }
     }
 
-    #if the file is over 4mb you will need to chunk it and upload individual files
     [object] uploadPeopleAPIFile([string]$file, [hashtable]$apiOptions = @{}) {
 
         if (Test-Path -PathType Leaf -LiteralPath $file) {
@@ -120,6 +119,10 @@
     [object] get_getUser([string]$orgID) {
         #try active users
         return $this.makeCURLRequest('GET', "/people/{$orgID}", '', @{})
+    }
+
+    [object] get_ticketInfo([int]$appID, [int]$ticketID) {
+        return $this.makeCURLRequest('GET', "/$($appID)/tickets/$($ticketID)", '', @{})
     }
 
     [bool] set_deactivateUser([string]$UID) {

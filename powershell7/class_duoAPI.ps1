@@ -599,7 +599,7 @@ $duoSecurity.new_duoUser(@{
     })
 
 $user = $duoSecurity.get_duoUserByUsername('someusername')
-$group = $duoSecurity.get_duoUserGroups(10, 0).response | Where-Object name -like 'Staff/Faculty'
+$group = $duoSecurity.get_duoUserGroups($user.response.user_id, 10, 0).response | Where-Object name -like 'Staff/Faculty'
 $duoSecurity.set_duoUserGroupAddMembershipByUserIDAndGroupID($user.response.user_id, $group.group_id)
 $duoSecurity.set_enrollDuoUser($user.response.username, $user.response.email, 2592000)
 #>

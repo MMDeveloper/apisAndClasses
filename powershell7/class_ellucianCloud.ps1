@@ -87,8 +87,11 @@ class ellucianCloud {
 
 <#
 $ellucianCloud = [ellucianCloud]::new(@{
-        apikey = 'api-guid-key-here'
+        apikey = '11111111-a3c5-49ca-a637-6cb9d09a9354'
     })
+
+$ellucianCloud.refreshTokenIfNeeded()
+Write-Host $ellucianCloud.bearerToken
 
 $ellucianCloud.doAPIRequest(@{
         url           = 'identification-biographical'
