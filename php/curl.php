@@ -31,7 +31,6 @@ class curl {
         $ch               = self::prepareCurlHandle( $requestMethod, $url, $params, $headers, $curlOptions );
         $ret              = curl_exec( $ch );
         self::$debugInfos = curl_getinfo( $ch );
-        curl_close( $ch );
 
         return $ret;
     }
@@ -139,6 +138,71 @@ class curl {
 
 }
 
+
+
+/*
+/////POST
+$url = 'https://someurl.com/api/1.0/endpoint';
+$headers = array(
+    'Authorization: Bearer 23423asdfasfa',
+    'ClientId: aaa',
+    'HeaderName: HeaderValue'
+);
+
+$postData = array (
+    'name' => 'lastname, firstname',
+    'customerID' => 3,
+    'someOtherData' => 'someValue'
+);
+curl::makeSingleRequest('POST', $url, $postData, $headers)
+
+
+
+/////GET
+$getParams = array(
+    'name' => 'value', 
+    'someOtherVar' => 'itsvalue'
+);
+
+$url = 'https://someurl.com/api/1.0/endpoint?' . http_build_query($getParams)
+$headers = array(
+    'HeaderName: HeaderValue'
+);
+
+curl::makeSingleRequest('GET', $url, array(), $headers)
+
+
+
+/////MULTIPLE
+$requests = array();
+$requests[] = array (
+    'url' => 'https://someurl.com/api/1.0/endpoint',
+    'method' => 'POST',
+    'data' => array (
+            'name' => 'lastname, firstname',
+            'customerID' => 3,
+            'someOtherData' => 'someValue'
+        ),
+    'headers' => array(
+            'Authorization: Bearer 23423asdfasfa',
+            'ClientId: aaa',
+            'HeaderName: HeaderValue'
+        )
+);
+
+$requests[] = array (
+    'url' => 'https://someurl.com/api/1.0/endpoint',
+    'method' => 'GET',
+    'data' => array (),
+    'headers' => array(
+            'Authorization: Bearer 23423asdfasfa',
+            'ClientId: aaa',
+            'HeaderName: HeaderValue'
+        )
+);
+
+curl::makeParallelRequests($requests);
+*/
 
 
 ?>
